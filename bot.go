@@ -54,7 +54,6 @@ func (b *BotService) processMessage(message *telego.Message) {
 			log.Printf("Failed to send message: %v", err)
 		}
 
-		// Отправка фото
 		file, err := os.Open("begite.jpg")
 		if err != nil {
 			log.Printf("Failed to open file: %v", err)
@@ -81,11 +80,11 @@ func (b *BotService) processMessage(message *telego.Message) {
 		responseText = "Запрос принят, ожидайте звонка."
 		keyboard = tu.Keyboard(
 			tu.KeyboardRow(tu.KeyboardButton("Отменить звонок")),
-		) // Меняем меню на кнопку "Отменить звонок"
+		)
 
 	case "Отменить звонок":
 		responseText = "Звонок отменён. Возвращаем вас в главное меню."
-		keyboard = generateMainKeyboard() // Возвращаем стандартное меню
+		keyboard = generateMainKeyboard()
 
 	default:
 		responseText = "Неизвестная команда. Выберите кнопку."
