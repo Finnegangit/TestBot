@@ -4,6 +4,7 @@ import (
 	"fmt"
 	tu "github.com/mymmrac/telego/telegoutil"
 	"log"
+	"os"
 
 	"github.com/mymmrac/telego"
 )
@@ -39,28 +40,63 @@ func (b *BotService) Run() {
 
 func (b *BotService) processMessage(message *telego.Message) {
 	chatID := message.Chat.ID
-	responseText := ""
+	var responseText string
+	var keyboard *telego.ReplyKeyboardMarkup = generateMainKeyboard() // Главное меню по умолчанию
 
-	// Проверяем, какая кнопка была нажата
 	switch message.Text {
 	case "Путеводитель":
-		responseText = "Путеводитель 1"
+		responseText = "Вот ваш путеводитель:"
+		_, err := b.telegoBot.SendMessage(&telego.SendMessageParams{
+			ChatID: telego.ChatID{ID: chatID},
+			Text:   responseText,
+		})
+		if err != nil {
+			log.Printf("Failed to send message: %v", err)
+		}
+
+		// Отправка фото
+		file, err := os.Open("begite.jpg")
+		if err != nil {
+			log.Printf("Failed to open file: %v", err)
+			return
+		}
+		defer file.Close()
+
+		_, err = b.telegoBot.SendPhoto(&telego.SendPhotoParams{
+			ChatID: telego.ChatID{ID: chatID},
+			Photo:  telego.InputFile{File: file},
+		})
+		if err != nil {
+			log.Printf("Failed to send photo: %v", err)
+		}
+		return
+
 	case "Сменить язык":
 		responseText = "Сменить язык 2"
+
 	case "Время ожидания ответа":
 		responseText = "Время 3"
+
 	case "Запросить звонок":
-		responseText = "Запросить звонок 4"
+		responseText = "Запрос принят, ожидайте звонка."
+		keyboard = tu.Keyboard(
+			tu.KeyboardRow(tu.KeyboardButton("Отменить звонок")),
+		) // Меняем меню на кнопку "Отменить звонок"
+
+	case "Отменить звонок":
+		responseText = "Звонок отменён. Возвращаем вас в главное меню."
+		keyboard = generateMainKeyboard() // Возвращаем стандартное меню
+
 	default:
 		responseText = "Неизвестная команда. Выберите кнопку."
 	}
 
-	// Отправляем ответ
-	msg := &telego.SendMessageParams{
-		ChatID: telego.ChatID{ID: chatID},
-		Text:   responseText,
-	}
-	_, err := b.telegoBot.SendMessage(msg)
+	// Отправляем сообщение с нужной клавиатурой
+	_, err := b.telegoBot.SendMessage(&telego.SendMessageParams{
+		ChatID:      telego.ChatID{ID: chatID},
+		Text:        responseText,
+		ReplyMarkup: keyboard,
+	})
 	if err != nil {
 		log.Printf("Failed to send message: %v", err)
 	}
