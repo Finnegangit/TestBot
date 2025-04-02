@@ -33,7 +33,7 @@ func (b *BotService) Run() {
 	defer b.telegoBot.StopLongPolling()
 	for update := range updatesChannel {
 		if update.Message != nil {
-			b.processMessage(update.Message)
+			go b.processMessage(update.Message)
 		}
 	}
 }
